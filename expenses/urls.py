@@ -8,4 +8,6 @@ urlpatterns = [
     path("transaction/",views.ExpensesAPIView.as_view(),name='create'),
     path("balance/",views.BalanceAPIView.as_view(),name='balance'),
     path("totals/",views.TotalAPIView.as_view(),name='total'),
+    path("history/",views.HistoryAPIView.as_view(),name='history'),
+    path("delete/<int:id>/",views.DeleteTransaction.as_view(),name='delete'),
 ]

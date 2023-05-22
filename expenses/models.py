@@ -54,6 +54,7 @@ class Expenses(models.Model):
     title = models.CharField(max_length=255)
     amount = models.FloatField()
     typeof = models.CharField(choices=TYPE_CHOICES,max_length=255)
+    createdOn = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return str(self.id)

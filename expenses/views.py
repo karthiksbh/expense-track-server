@@ -66,7 +66,11 @@ class BalanceAPIView(APIView):
             user = request.user
             income_amount = Expenses.objects.filter(Q(user_ref=user) & Q(typeof="Income")).aggregate(Sum('amount'))['amount__sum']
             expen_amount = Expenses.objects.filter(Q(user_ref=user) & Q(typeof="Expenditure")).aggregate(Sum('amount'))['amount__sum']
-            total = income_amount - expen_amount if income_amount and expen_amount else 0
+            if income_amount is None:
+                income_amount = 0
+            if expen_amount is None:
+                expen_amount = 0
+            total = income_amount - expen_amount
             return Response({'total': total}, status=200)
         except Exception as e:
             return Response({'Error': str(e)}, status=400)
@@ -94,6 +98,27 @@ class GetProfile(APIView):
             user_det = User.objects.get(email=user)
             user_serializer = UserProfileSerializer(user_det)
             return Response({'data':user_serializer.data},status=200)
+        except Exception as e:
+            return Response({'Error':str(e)},status=400)
+
+class HistoryAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self,request):
+        try:
+            history = Expenses.objects.filter(user_ref=request.user).order_by('createdOn')
+            serializer = ExpensesSerializer(history,many=True)
+            return Response(serializer.data,status=200)
+        except Exception as e:
+            return Response({'Error':str(e)},status=400)
+
+class DeleteTransaction(APIView):
+    def delete(self,request,id):
+        try:
+            trans = Expenses.objects.get(id=id)
+            trans.delete()
+            return Response({'message':'Transaction Deleted'},status=200)
         except Exception as e:
             return Response({'Error':str(e)},status=400)
 
