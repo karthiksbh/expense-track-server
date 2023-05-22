@@ -1,10 +1,13 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from expenses.serializers import ExpensesSerializer,RegisterUserSerializer
+from expenses.serializers import ExpensesSerializer,RegisterUserSerializer,UserProfileSerializer
 from expenses.models import Expenses,User
 from django.db.models import Sum
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q
 
 class RegisterUser(APIView):
     def post(self, request):
@@ -37,35 +40,60 @@ class LoginUser(APIView):
 
 
 class ExpensesAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def post(self,request):
         try:
             data = request.data
-            if(data['amount']<0):
-                data['typeof']='Expenditure'
-            else:
-                data['typeof']='Income'
+            data['user_ref'] = request.user.pk
+            print(data)
             serializer = ExpensesSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
                 return Response({'message':'Transaction Added'},status=200)
             else:
-                return Response({'Error':'Incorrect Inputs'},status=400)
+                return Response({'errors':serializer.errors},status=400)
         except Exception as e:
             return Response({'Error':str(e)},status=400)
 
 class BalanceAPIView(APIView):
-    def get(self,request):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
         try:
-            total_amount = Expenses.objects.aggregate(Sum('amount'))
-            return Response({'total':total_amount['amount__sum']},status=200)
+            user = request.user
+            income_amount = Expenses.objects.filter(Q(user_ref=user) & Q(typeof="Income")).aggregate(Sum('amount'))['amount__sum']
+            expen_amount = Expenses.objects.filter(Q(user_ref=user) & Q(typeof="Expenditure")).aggregate(Sum('amount'))['amount__sum']
+            total = income_amount - expen_amount if income_amount and expen_amount else 0
+            return Response({'total': total}, status=200)
         except Exception as e:
-            return Response({'Error':str(e)},status=400)
+            return Response({'Error': str(e)}, status=400)
 
 class TotalAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def get(self,request):
         try:
-            income = Expenses.objects.filter(typeof='Income').aggregate(Sum('amount'))
-            expen = Expenses.objects.filter(typeof='Expenditure').aggregate(Sum('amount'))
+            user = request.user
+            income = Expenses.objects.filter(Q(typeof='Income') & Q(user_ref=user)).aggregate(Sum('amount'))
+            expen = Expenses.objects.filter(Q(typeof='Expenditure') & Q(user_ref=user)).aggregate(Sum('amount'))
             return Response({'income':income['amount__sum'],'expense':expen['amount__sum']},status=200)
         except Exception as e:
             return Response({'Error':str(e)},status=400)
+
+class GetProfile(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self,request):
+        try:
+            user = request.user
+            user_det = User.objects.get(email=user)
+            user_serializer = UserProfileSerializer(user_det)
+            return Response({'data':user_serializer.data},status=200)
+        except Exception as e:
+            return Response({'Error':str(e)},status=400)
+

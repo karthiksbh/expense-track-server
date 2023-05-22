@@ -50,6 +50,7 @@ TYPE_CHOICES = (
 )
 
 class Expenses(models.Model):
+    user_ref = models.ForeignKey(User,on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     amount = models.FloatField()
     typeof = models.CharField(choices=TYPE_CHOICES,max_length=255)

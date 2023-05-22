@@ -18,6 +18,12 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 
         return user_det
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email','first_name','last_name']
+
+
 class ExpensesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expenses
