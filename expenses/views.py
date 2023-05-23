@@ -107,7 +107,7 @@ class HistoryAPIView(APIView):
 
     def get(self,request):
         try:
-            history = Expenses.objects.filter(user_ref=request.user).order_by('createdOn')
+            history = Expenses.objects.filter(user_ref=request.user).order_by('-createdOn')
             serializer = ExpensesSerializer(history,many=True)
             return Response(serializer.data,status=200)
         except Exception as e:
