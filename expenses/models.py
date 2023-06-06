@@ -1,7 +1,8 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-    
+
+
 class CustomUserManager(BaseUserManager):
 
     def create_superuser(self, email, first_name, password, **other_fields):
@@ -33,7 +34,7 @@ class CustomUserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_('Email Address'), unique=True)
     first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150, null=True,blank=True)
+    last_name = models.CharField(max_length=150, null=True, blank=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     objects = CustomUserManager()
@@ -44,16 +45,34 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return str(self.email)
 
+
 TYPE_CHOICES = (
-    ('Income','Income'),
-    ('Expenditure','Expenditure')
+    ('Income', 'Income'),
+    ('Expenditure', 'Expenditure')
 )
 
+CAT_CHOICES = (
+    ('Food', 'Food'),
+    ('Salary', 'Salary'),
+    ('Freelance', 'Freelance'),
+    ('Investment', 'Investment'),
+    ('Rental Income', 'Rental Income'),
+    ('Gifts', 'Gifts'),
+    ('Other', 'Other'),
+    ('Transportation', 'Transportation'),
+    ('Housing and Groceries', 'Housing and Groceries'),
+    ('Health', 'Health'),
+    ('Entertainment', 'Entertainment'),
+    ('Personal Care', 'Personal Care'),
+)
+
+
 class Expenses(models.Model):
-    user_ref = models.ForeignKey(User,on_delete=models.CASCADE)
+    user_ref = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     amount = models.FloatField()
-    typeof = models.CharField(choices=TYPE_CHOICES,max_length=255)
+    typeof = models.CharField(choices=TYPE_CHOICES, max_length=255)
+    categories = models.CharField(choices=CAT_CHOICES, max_length=255,default="Other")
     createdOn = models.DateField(auto_now_add=True)
 
     def __str__(self):
