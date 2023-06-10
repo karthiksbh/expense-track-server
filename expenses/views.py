@@ -147,7 +147,7 @@ class IncomeGroupWise(APIView):
                 max_category = category
             
             if(max_category==None):
-                message = "There is no fixed category from which you get maximum income"
+                message = "No fixed category from which you get maximum income"
             else:
                 message = "Maximum income is coming from the category " + max_category
         return Response({'data': income_data,'message':message}, status=200)
@@ -177,7 +177,7 @@ class ExpenseGroupWise(APIView):
                 max_category = category
             
             if(max_category==None):
-                message = "There is no fixed category from which you get maximum income"
+                message = "No fixed category from which there is maximum expense"
             else:
                 message = "Maximum expenditure is from the category " + max_category
         return Response({'data': expense_data,'message':message}, status=200)
