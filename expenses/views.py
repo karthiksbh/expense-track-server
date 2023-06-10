@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from expenses.serializers import ExpensesSerializer,RegisterUserSerializer,UserProfileSerializer
-from expenses.models import Expenses,User
+from expenses.models import Expenses,User,CAT_CHOICES
 from django.db.models import Sum
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -122,3 +122,62 @@ class DeleteTransaction(APIView):
         except Exception as e:
             return Response({'Error':str(e)},status=400)
 
+class IncomeGroupWise(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        categories = ['Salary', 'Investment', 'Rental Income', 'Freelance', 'Other Income', 'Gifts']
+        incomes = Expenses.objects.filter(Q(typeof="Income") & Q(user_ref=request.user)).values('categories').annotate(total_income=Sum('amount'))
+        income_data = {'categories': [], 'amount': []}
+        
+        max_income = 0
+        max_category = None
+
+        for category in categories:
+            total = 0
+            for income in incomes:
+                if income['categories'] == category:
+                    total = income['total_income']
+                    break
+            income_data['categories'].append(category)
+            income_data['amount'].append(total)
+            if(total>max_income):
+                max_income = total
+                max_category = category
+            
+            if(max_category==None):
+                message = "There is no fixed category from which you get maximum income"
+            else:
+                message = "Maximum income is coming from the category " + max_category
+        return Response({'data': income_data,'message':message}, status=200)
+
+class ExpenseGroupWise(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        categories = ['Food', 'Transportation', 'Housing and Groceries', 'Health', 'Other Expense', 'Entertainment','Personal Care']
+        expenses = Expenses.objects.filter(Q(typeof="Expenditure") & Q(user_ref=request.user)).values('categories').annotate(total_income=Sum('amount'))
+        expense_data = {'categories': [], 'amount': []}
+        
+        max_expense = 0
+        max_category = None
+
+        for category in categories:
+            total = 0
+            for expense in expenses:
+                if expense['categories'] == category:
+                    total = expense['total_income']
+                    break
+            expense_data['categories'].append(category)
+            expense_data['amount'].append(total)
+            if(total>max_expense):
+                max_expense = total
+                max_category = category
+            
+            if(max_category==None):
+                message = "There is no fixed category from which you get maximum income"
+            else:
+                message = "Maximum expenditure is from the category " + max_category
+        return Response({'data': expense_data,'message':message}, status=200)

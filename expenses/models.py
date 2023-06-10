@@ -58,12 +58,13 @@ CAT_CHOICES = (
     ('Investment', 'Investment'),
     ('Rental Income', 'Rental Income'),
     ('Gifts', 'Gifts'),
-    ('Other', 'Other'),
+    ('Other Income', 'Other Income'),
     ('Transportation', 'Transportation'),
     ('Housing and Groceries', 'Housing and Groceries'),
     ('Health', 'Health'),
     ('Entertainment', 'Entertainment'),
     ('Personal Care', 'Personal Care'),
+    ('Other Expense', 'Other Expense'),
 )
 
 
@@ -72,7 +73,7 @@ class Expenses(models.Model):
     title = models.CharField(max_length=255)
     amount = models.FloatField()
     typeof = models.CharField(choices=TYPE_CHOICES, max_length=255)
-    categories = models.CharField(choices=CAT_CHOICES, max_length=255,default="Other")
+    categories = models.CharField(choices=CAT_CHOICES, max_length=255,default="")
     createdOn = models.DateField(auto_now_add=True)
 
     def __str__(self):

@@ -10,4 +10,6 @@ urlpatterns = [
     path("totals/",views.TotalAPIView.as_view(),name='total'),
     path("history/",views.HistoryAPIView.as_view(),name='history'),
     path("delete/<int:id>/",views.DeleteTransaction.as_view(),name='delete'),
+    path("income-wise/",views.IncomeGroupWise.as_view(),name='incomewise'),
+    path("expense-wise/",views.ExpenseGroupWise.as_view(),name='incomewise'),
 ]
